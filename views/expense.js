@@ -13,7 +13,7 @@ form.addEventListener('submit', function(event) {
     };
 
     // Create new expense via backend endpoint
-    fetch('/api/expenses', { // Corrected endpoint URL
+    fetch('/expenses', { // Corrected endpoint URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -99,7 +99,7 @@ function setDetails(formDetails) {
 
 // Initial load to fetch and display stored expenses
 window.onload = function() {
-    fetch('studentExpense/expenses')
+    fetch('/fetchExpense')
         .then(response => response.json())
         .then(expenses => {
             expenses.forEach(expense => {
@@ -108,3 +108,5 @@ window.onload = function() {
         })
         .catch(error => console.error('Error fetching expenses:', error));
 };
+
+

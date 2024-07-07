@@ -14,8 +14,8 @@ app.use(bodyParser.json())
 app.use(express.json());
 
 // app.use('/',expenseController.)
-app.use('/studentExpense',expenseRouter) 
-app.use('/',expenseController.getHome)
+//app.use('/studentExpense',expenseRouter) 
+app.use('/',expenseRouter)
 
 
 const port = 2000
