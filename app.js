@@ -1,4 +1,5 @@
 const sequelize = require('./model/expense')
+const path = require('path')
 const bodyParser = require('body-parser')
 
 const expenseController = require('./controllers/studentexpenses')
@@ -6,7 +7,7 @@ const expenseRouter = require('./routes/expenserouter')
 
 const express = require('express')
 const app = express()
-
+app.use(express.static(path.join(__dirname, 'views')));
 
 app.use(bodyParser.urlencoded({extended : true}))
 app.use(bodyParser.json())

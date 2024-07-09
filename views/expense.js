@@ -3,8 +3,14 @@ const form = document.getElementById("expenseForm");
 form.addEventListener('submit', function(event) {
     event.preventDefault();
     const amount = document.getElementById("expenseAmount").value;
-    const description = document.getElementById("expenseDescription").value; // Corrected typo here
+    const description = document.getElementById("expenseDescription").value;
     const category = document.getElementById("category").value;
+
+    // Validate fields
+    if (!amount || !description || !category) {
+        alert('Please fill out all fields before submitting.');
+        return;
+    }
 
     const formDetails = {
         amount: amount,
@@ -13,19 +19,14 @@ form.addEventListener('submit', function(event) {
     };
 
     // Create new expense via backend endpoint
-    fetch('/expenses', { // Corrected endpoint URL
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formDetails)
-    })
-    .then(response => response.json())
-    .then(newExpense => {
-        console.log('Expense saved:', newExpense);
-        setDetails(newExpense); // Update frontend UI with newly created expense
-    })
-    .catch(error => console.error('Error saving expense:', error));
+    axios.post('/expense', formDetails)
+        .then(response => {
+            const newExpense = response.data;
+            console.log('Expense saved:', newExpense);
+            alert('Expense added successfully'); // Show popup message
+            setDetails(newExpense); // Update frontend UI with newly created expense
+        })
+        .catch(error => console.error('Error saving expense:', error));
 });
 
 function setDetails(formDetails) {
@@ -43,17 +44,15 @@ function setDetails(formDetails) {
     deleteButton.style.cursor = 'pointer';
     deleteButton.addEventListener('click', function() {
         // Delete expense via backend endpoint
-        fetch(`/api/expenses/${formDetails.id}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (response.ok) {
-                listParent.removeChild(createList);
-            } else {
-                throw new Error('Failed to delete expense');
-            }
-        })
-        .catch(error => console.error('Error deleting expense:', error));
+        axios.delete(`/deleteExpense/${formDetails.id}`)
+            .then(response => {
+                if (response.status === 200) {
+                    listParent.removeChild(createList);
+                } else {
+                    throw new Error('Failed to delete expense');
+                }
+            })
+            .catch(error => console.error('Error deleting expense:', error));
     });
 
     // Edit button
@@ -71,19 +70,13 @@ function setDetails(formDetails) {
         document.getElementById("category").value = formDetails.category;
 
         // Update expense via backend endpoint
-        fetch(`/api/expenses/${formDetails.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: formDetails.amount,
-                description: formDetails.description,
-                category: formDetails.category
-            })
+        axios.put(`/editExpense/${formDetails.id}`, {
+            amount: formDetails.amount,
+            description: formDetails.description,
+            category: formDetails.category
         })
-        .then(response => response.json())
-        .then(updatedExpense => {
+        .then(response => {
+            const updatedExpense = response.data;
             console.log('Expense updated:', updatedExpense);
             setDetails(updatedExpense); // Update frontend UI with updated expense
         })
@@ -99,14 +92,21 @@ function setDetails(formDetails) {
 
 // Initial load to fetch and display stored expenses
 window.onload = function() {
-    fetch('/fetchExpense')
-        .then(response => response.json())
-        .then(expenses => {
-            expenses.forEach(expense => {
-                setDetails(expense);
-            });
+    axios.get('/fetchExpense')
+        .then(response => {
+            const expenses = response.data.Details;
+            console.log('Fetched expenses:', expenses);
+            if (Array.isArray(expenses)) {
+                expenses.forEach(expense => {
+                    if (expense.amount && expense.description && expense.category) {
+                        setDetails(expense);
+                    } else {
+                        console.error('Error: Missing required fields in expense object:', expense);
+                    }
+                });
+            } else {
+                console.error('Error: Expected an array but received:', expenses);
+            }
         })
         .catch(error => console.error('Error fetching expenses:', error));
 };
-
-
